@@ -1,5 +1,7 @@
 # `scala-db`
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core)
+
 A simple jdbc-based library for SQL interaction written in frustration with what's on offer in the Scala ecosystem.
 
 This library uses [`cats-effect`](https://github.com/typelevel/cats-effect/) and [`fs2`](https://github.com/typelevel/fs2/).

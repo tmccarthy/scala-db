@@ -9,7 +9,8 @@ import scala.collection.immutable.ArraySeq
 
 /**
   * Like [[Update]], but returns any generated DB ids in a way that might be useful when running `INSERT` statements.
-  * Note that an `INSERT` may return an empty list of [[DbId]] values if there's an `ON CONFLICT DO NOTHING` clause.
+  * Note that an `INSERT` may return an empty list of [[au.id.tmm.db.data.DbId]] values if there's an
+  * `ON CONFLICT DO NOTHING` clause.
   */
 // TODO really unsure on the modelling here. Should probably either return an Option[DbId[_]] or carry a List[A] and
 //  insert them all

@@ -5,9 +5,9 @@ ThisBuild / baseProjectName := "scala-db"
 ThisBuild / githubProjectName := "scala-db"
 ThisBuild / githubWorkflowJavaVersions := List("adopt@1.11")
 
-val fs2Version            = "3.2.7"
-val catsEffectVersion     = "3.2.9"
-val slf4jVersion          = "2.0.0-alpha1"
+val fs2Version        = "3.2.7"
+val catsEffectVersion = "3.2.9"
+val slf4jVersion      = "2.0.0-alpha1"
 
 lazy val root = project
   .in(file("."))

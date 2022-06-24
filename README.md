@@ -1,6 +1,6 @@
 # `scala-db`
 
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core_2.13/badge.svg)](https://maven-badges.herokuapp.com/maven-central/au.id.tmm.scala-db/scala-db-core_2.13)
 
 A simple jdbc-based library for SQL interaction written in frustration with what's on offer in the Scala ecosystem.
 

@@ -2,6 +2,7 @@ package au.id.tmm.db
 
 import java.sql.SQLException
 
+import au.id.tmm.db.FluentDbOps.UnexpectedResultSizeException
 import au.id.tmm.db.data.{DbId, NumRowsAffected}
 import au.id.tmm.db.operations.streaming.{BatchInsert, StreamingQuery}
 import au.id.tmm.db.operations.{DatabaseOp, Insert, Query, Update}
@@ -23,13 +24,24 @@ private[db] trait FluentDbOps {
 
   // TODO this needs a test
   final def queryOnlyElement[A](queryStatement: QueryStatement[A]): IO[A] =
-    run(Query(queryStatement)).flatMap(a =>
-      a.size match {
-        case 1 => IO.pure(a.head)
-        case badSize =>
-          IO.raiseError(new FluentDbOps.UnexpectedResultSizeException(expectedSize = 1, actualSize = badSize))
-      },
-    )
+    run(Query(queryStatement)).flatMap { results =>
+      results.size match {
+        case 1       => IO.pure(results.head)
+        case badSize => IO.raiseError(new UnexpectedResultSizeException(expectedSize = 1, actualSize = badSize))
+      }
+    }
+
+  // TODO this needs a test
+  /**
+    * Differs from `queryFirstElement` in that an error is thrown if more than one element is returned from the DB
+    */
+  final def queryOneOrNoElement[A](queryStatement: QueryStatement[A]): IO[Option[A]] =
+    run(Query(queryStatement)).flatMap { results =>
+      results.size match {
+        case 0 | 1   => IO.pure(results.headOption)
+        case badSize => IO.raiseError(new UnexpectedResultSizeException(expectedSize = Set(0, 1), actualSize = badSize))
+      }
+    }
 
   final def streamingQuery[A](queryStatement: QueryStatement[A]): fs2.Stream[IO, A] =
     run(StreamingQuery(queryStatement))
@@ -50,7 +62,9 @@ private[db] trait FluentDbOps {
 
 object FluentDbOps {
 
-  final class UnexpectedResultSizeException(expectedSize: Int, actualSize: Int)
-      extends SQLException(s"Expected exactly $expectedSize elements, but was $actualSize")
+  final class UnexpectedResultSizeException(expectedSize: Set[Int], actualSize: Int)
+      extends SQLException(s"Expected exactly $expectedSize elements, but was $actualSize") {
+    def this(expectedSize: Int, actualSize: Int) = this(Set(expectedSize), actualSize)
+  }
 
 }

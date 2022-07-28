@@ -19,6 +19,7 @@ class DatabaseTest extends CatsEffectSuite {
 
   private val dbFixture: SyncIO[FunFixture[Database]] = ResourceFixture {
     for {
+      _ <- Resource.liftK(IO(Class.forName("org.sqlite.JDBC")))
       dbFilePath <- Resource.make(IO(Files.createTempDirectory(getClass.getSimpleName).resolve("test.db"))) { path =>
         for {
           _ <- IO(Files.deleteIfExists(path))

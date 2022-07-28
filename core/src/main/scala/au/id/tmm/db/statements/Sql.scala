@@ -28,13 +28,13 @@ final case class Sql(raw: String, arguments: Arguments) {
 
 }
 
-object Sql {
+object Sql extends SqlCompanionVersionSpecific {
 
   val empty: Sql = Sql("", Arguments.empty)
 
   def apply(raw: String): Sql = Sql(raw, Arguments.empty)
 
-  def mkSql[A](components: Seq[A], sep: Sql)(implicit ev: A => Sql.Component): Sql =
+  def mkSql[A](components: Seq[A], sep: Sql)(implicit ev: ConvertsToSqlComponent[A]): Sql =
     mkSql(components, empty, sep, empty)
 
   def mkSql[A](
@@ -43,7 +43,7 @@ object Sql {
     sep: Sql,
     end: Sql,
   )(implicit
-    ev: A => Sql.Component,
+    ev: ConvertsToSqlComponent[A],
   ): Sql =
     if (components.isEmpty) {
       start + end
@@ -80,7 +80,7 @@ object Sql {
       }
     }
 
-    implicit class JoinOps[A](private val components: Seq[A])(implicit ev: A => Sql.Component) {
+    implicit class JoinOps[A](private val components: Seq[A])(implicit ev: ConvertsToSqlComponent[A]) {
       def mkSql(sep: Sql): Sql = Sql.mkSql(components, sep)
       def mkSql(
         start: Sql,
@@ -97,9 +97,9 @@ object Sql {
     private val argumentsBuilder: mutable.Builder[Argument[_], ArraySeq[Argument[_]]] = ArraySeq.newBuilder,
   ) {
     private[Sql] def appendRawSql(rawSql: String): Unit =
-      rawSqlBuilder.append(rawSql)
+      rawSqlBuilder.append(rawSql): Unit
 
-    def append[A](component: A)(implicit ev: A => Sql.Component): Builder = {
+    def append[A](component: A)(implicit ev: ConvertsToSqlComponent[A]): Builder = {
       (component: Sql.Component) match {
         case Sql.Component.OfArgument(argument) => {
           appendRawSql("?")
@@ -121,7 +121,7 @@ object Sql {
       case ColumnOnTable(TableName(table), ColumnName(column)) => s"$table.$column"
     }
 
-    def appendAll[A](components: Seq[A])(implicit ev: A => Sql.Component): Builder = {
+    def appendAll[A](components: Seq[A])(implicit ev: ConvertsToSqlComponent[A]): Builder = {
       components.foreach(append[A])
       this
     }
@@ -140,15 +140,10 @@ object Sql {
 
   sealed trait Component
 
-  object Component {
+  object Component extends SqlComponentCompanionVersionSpecific {
     final case class OfArgument(argument: Argument[_]) extends Component
     final case class OfSymbol(symbol: DbSymbol)        extends Component
     final case class OfSql(sql: Sql)                   extends Component
-
-    implicit def of(argument: Argument[_]): Component     = OfArgument(argument)
-    implicit def ofA[A : ArgumentBinder](a: A): Component = OfArgument(Argument(a))
-    implicit def of(dbSymbol: DbSymbol): Component        = OfSymbol(dbSymbol)
-    implicit def of(sql: Sql): Component                  = OfSql(sql)
   }
 
   implicit val monoid: Monoid[Sql] = new Monoid[Sql] {

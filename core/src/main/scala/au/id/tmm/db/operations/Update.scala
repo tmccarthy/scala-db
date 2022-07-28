@@ -13,7 +13,7 @@ final class Update private (updateStatement: UpdateStatement) extends DatabaseOp
         for {
           numRowsAffected <- IO {
             updateStatement.parameterisedSql.arguments.bindToUnsafe(ps)
-            NumRowsAffected(ps.executeUpdate())
+            NumRowsAffected(ps.executeUpdate().toLong)
           }
         } yield numRowsAffected
       }
